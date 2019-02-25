@@ -1,0 +1,28 @@
+{
+  "name": "@casto/sdk",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "parcel build index.js ",
+    "release": "npm version patch && npm publish"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "libp2p": "^0.22.0",
+    "libp2p-kad-dht": "^0.14.3",
+    "libp2p-mplex": "^0.8.4",
+    "libp2p-webrtc-star": "^0.15.8",
+    "libp2p-websocket-star": "^0.10.2",
+    "lodash.isfunction": "^3.0.9",
+    "multiaddr": "^6.0.3",
+    "peer-info": "^0.15.1",
+    "pull-notify": "^0.1.1",
+    "pull-pushable": "^2.2.0",
+    "pull-stream": "^3.6.9",
+    "pull-stringify": "^2.0.0",
+    "setimmediate": "^1.0.5"
+  }
+}
