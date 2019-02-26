@@ -18,7 +18,7 @@ const codecToFirst = (sdp, codec) => {
   );
 };
 
-class Streamer {
+export default class Streamer {
   constructor(options) {
     const defaults = {
       peerConnection: {
@@ -197,5 +197,3 @@ class Streamer {
     return mediaStream;
   }
 }
-
-module.exports = Streamer;

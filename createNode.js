@@ -3,7 +3,7 @@ import PeerInfo from "peer-info";
 import WSStar from "libp2p-websocket-star";
 import Mplex from "libp2p-mplex";
 
-class Node extends libp2p {
+export default class Node extends libp2p {
   constructor(_options) {
     const wsStar = new WSStar({ id: _options.peerInfo.id });
     const defaults = {
@@ -25,5 +25,3 @@ const createNode = async websocketStars => new Promise((resolve, reject) => {
     resolve(node);
   });
 });
-
-module.exports = createNode;

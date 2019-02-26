@@ -28,7 +28,7 @@ function bindPeerConnectionEvents(sendToPrism) {
   });
 };
 
-class Viewer {
+export default class Viewer {
   constructor(options) {
     const defaults = {
       peerConnection: {
@@ -181,5 +181,3 @@ class Viewer {
     return this.mediaStream;
   }
 }
-
-module.exports = Viewer;
