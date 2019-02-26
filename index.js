@@ -1,6 +1,5 @@
 import Streamer from "./streamer";
 import Viewer from "./viewer";
-import setimmediate from 'setimmediate';
 
 class Casto {
   constructor(options) {
