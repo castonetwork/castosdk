@@ -37,6 +37,7 @@ class Streamer {
     /* events */
     this.onNodeInitiated = undefined;
     this.onReadyToCast = undefined;
+    this.onCompleted = undefined;
     this.onClosed = undefined;
 
     this.init({ ...defaults, ...options });
@@ -53,6 +54,7 @@ class Streamer {
     for (const event of [
       "onNodeInitiated",
       "onReadyToCast",
+      "onCompleted",
       "onClosed"
     ]) {
       this.event.addListener(event, e => this[event] && this[event](e));
