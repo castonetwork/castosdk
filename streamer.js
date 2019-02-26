@@ -22,7 +22,8 @@ class Streamer {
   constructor(options) {
     const defaults = {
       peerConnection: {
-        sdpSemantics: 'unified-plan'
+        sdpSemantics: 'unified-plan',
+        iceServers: [{urls: "stun:stun.l.google.com:19302"}]
       },
       websocketStars: [multiaddr("/dns4/wsstar.casto.network/tcp/443/wss/p2p-websocket-star/")],
       constraint: {
