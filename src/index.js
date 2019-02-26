@@ -1,7 +1,7 @@
-import Streamer from "./streamer";
-import Viewer from "./viewer";
+const Streamer = require("./streamer");
+const Viewer = require("./viewer");
 
-export default class Casto {
+class Casto {
   constructor(options) {
     if (options && options.type ==="sender") {
       return new Streamer(options);
@@ -10,3 +10,5 @@ export default class Casto {
     }
   }
 }
+
+module.exports = Casto;

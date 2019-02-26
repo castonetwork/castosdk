@@ -1,9 +1,9 @@
-import EventEmitter from "./eventEmitter";
-import multiaddr from "multiaddr";
-import pull from "pull-stream";
-import Pushable from "pull-pushable";
-import createNode from "./createNode";
-import stringify from "pull-stringify";
+const EventEmitter = require("./eventEmitter");
+const createNode = require("./createNode");
+const multiaddr = require("multiaddr");
+const pull = require("pull-stream");
+const Pushable = require("pull-pushable");
+const stringify = require("pull-stringify");
 
 function bindPeerConnectionEvents(sendToPrism) {
   Object.assign(this.pc, {
@@ -28,7 +28,7 @@ function bindPeerConnectionEvents(sendToPrism) {
   });
 };
 
-export default class Viewer {
+class Viewer {
   constructor(options) {
     const defaults = {
       peerConnection: {
@@ -181,3 +181,5 @@ export default class Viewer {
     return this.mediaStream;
   }
 }
+
+module.exports = Viewer;

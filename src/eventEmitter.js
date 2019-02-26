@@ -1,8 +1,8 @@
-let isFunction = function(obj) {
+const isFunction = function(obj) {
   return typeof obj == 'function' || false;
 };
 
-export default class EventEmitter {
+class EventEmitter {
   constructor() {
     this.listeners = new Map();
   }
@@ -42,3 +42,5 @@ export default class EventEmitter {
     return false;
   }
 }
+
+module.exports = EventEmitter;

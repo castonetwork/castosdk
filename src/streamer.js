@@ -1,8 +1,8 @@
-import EventEmitter from "./eventEmitter";
-import multiaddr from "multiaddr";
-import pull from "pull-stream";
-import Pushable from "pull-pushable";
-import createNode from "./createNode";
+const EventEmitter = require("./eventEmitter");
+const createNode = require("./createNode");
+const multiaddr = require("multiaddr");
+const pull = require("pull-stream");
+const Pushable = require("pull-pushable");
 
 const codecToFirst = (sdp, codec) => {
   const regCodecs = /a=rtpmap:(\d+) (.*)\//;
@@ -18,7 +18,7 @@ const codecToFirst = (sdp, codec) => {
   );
 };
 
-export default class Streamer {
+class Streamer {
   constructor(options) {
     const defaults = {
       peerConnection: {
@@ -197,3 +197,5 @@ export default class Streamer {
     return mediaStream;
   }
 }
+
+module.exports = Streamer;

@@ -2,9 +2,10 @@
   "name": "@casto/sdk",
   "version": "0.0.7",
   "description": "web SDK for CASTO",
-  "main": "index.js",
+  "main": "src/index.js",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "aegir build",
@@ -15,7 +16,7 @@
     "p2p",
     "broadcast"
   ],
-  "author": "jhlee@",
+  "author": "jhlee@casto.network",
   "license": "ISC",
   "dependencies": {
     "libp2p": "~0.22.0",
@@ -23,17 +24,14 @@
     "libp2p-mplex": "~0.8.4",
     "libp2p-webrtc-star": "~0.15.8",
     "libp2p-websocket-star": "~0.10.2",
-    "lodash.isfunction": "^3.0.9",
-    "multiaddr": "^6.0.3",
     "peer-info": "~0.15.1",
+    "multiaddr": "^6.0.3",
     "pull-notify": "~0.1.1",
     "pull-pushable": "^2.2.0",
     "pull-stream": "^3.6.9",
-    "pull-stringify": "^2.0.0",
-    "setimmediate": "^1.0.5"
+    "pull-stringify": "^2.0.0"
   },
   "devDependencies": {
-    "aegir": "^18.2.0",
-    "parcel": "^1.11.0"
+    "aegir": "^18.2.0"
   }
 }
