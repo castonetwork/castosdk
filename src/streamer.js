@@ -1,3 +1,5 @@
+'use strict';
+
 const EventEmitter = require("./eventEmitter");
 const createNode = require("./createNode");
 const multiaddr = require("multiaddr");

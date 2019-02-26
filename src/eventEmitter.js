@@ -1,3 +1,5 @@
+'use strict';
+
 const isFunction = function(obj) {
   return typeof obj == 'function' || false;
 };

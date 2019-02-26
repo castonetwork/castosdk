@@ -1,3 +1,5 @@
+'use strict';
+
 const Streamer = require("./streamer");
 const Viewer = require("./viewer");
 

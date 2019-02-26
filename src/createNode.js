@@ -1,3 +1,5 @@
+'use strict';
+
 const libp2p=require("libp2p");
 const PeerInfo=require("peer-info");
 const WSStar=require("libp2p-websocket-star");
