@@ -53,7 +53,7 @@ class Viewer {
     this.onSendChannelsList = undefined;
     this.onWavesUpdated = undefined;
 
-    this.init({ ...defaults, ...options }); 
+    this.init(Object.assign(defaults, options));
   }
   async init(options) {
     await this.setup(options);
@@ -135,7 +135,7 @@ class Viewer {
                   this.event.emit("onWavesUpdated", waves);
                 },
                 "sendChannelsList": ({channels})=> {
-                  this.prisms[prismPeerId] = { ...this.prisms[prismPeerId], ...channels};
+                  this.prisms[prismPeerId] = Object.assign(this.prisms[prismPeerId], channels);
                   this.event.emit("onSendChannelsList", {channels, prismPeerId});
                 }
               };

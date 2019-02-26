@@ -15,7 +15,7 @@ class Node extends libp2p {
         peerDiscovery: [wsStar.discovery]
       }
     }
-    super({ ...defaults, ..._options })
+    super(Object.assign(defaults, _options));
   }
 }
 

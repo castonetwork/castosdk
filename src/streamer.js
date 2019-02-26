@@ -43,7 +43,7 @@ class Streamer {
     this.onCompleted = undefined;
     this.onClosed = undefined;
 
-    this.init({ ...defaults, ...options });
+    this.init(Object.assign(defaults, options));
   }
   async init(options) {
     await this.setup(options);
