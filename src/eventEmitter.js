@@ -19,9 +19,8 @@ class EventEmitter {
 
     if (listeners && listeners.length) {
       index = listeners.reduce((i, listener, index) => {
-        return (isFunction(listener) && listener === callback) ?
-          i = index :
-          i;
+        const r = (isFunction(listener) && listener === callback) ? i = index : i;
+        return r;
       }, -1);
 
       if (index > -1) {

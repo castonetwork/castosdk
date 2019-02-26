@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 const EventEmitter = require("./eventEmitter");
 const createNode = require("./createNode");
@@ -70,7 +70,6 @@ class Streamer {
   }
 
   async onHandle(protocol, conn) {
-    let handledPeerId;
     this.pc = new RTCPeerConnection(this.config.peerConnection);
     Object.assign(this.pc, {
       "onicecandidate": event => {
@@ -95,7 +94,7 @@ class Streamer {
             this.event.emit("onCompleted");
           },
           "disconnected": () => {
-            this.pc.getTransceivers().forEach(transceiver => transceiver.direction = 'inactive');
+            this.pc.getTransceivers().forEach(transceiver => { transceiver.direction = 'inactive'; return});
             this.pc.close();
           },
           "closed": () => {
