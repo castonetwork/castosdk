@@ -3,8 +3,11 @@
   "version": "0.0.7",
   "description": "web SDK for CASTO",
   "main": "index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "parcel build index.js --no-source-maps",
+    "build": "aegir build",
     "release": "npm version patch && npm publish --access public"
   },
   "keywords": [
@@ -30,6 +33,7 @@
     "setimmediate": "^1.0.5"
   },
   "devDependencies": {
+    "aegir": "^18.2.0",
     "parcel": "^1.11.0"
   }
 }
