@@ -77,3 +77,7 @@ Should return a `MediaStream`, which is an object for transfer to the remote.
 
 #### casto.onWavesUpdated: <function>
 > ...
+
+## License
+
+[MIT](LICENSE) © Casto Network
