@@ -92,7 +92,8 @@ class Viewer {
           }
           const sendToPrism = Pushable();
           this.prisms[prismPeerId] = {
-            isDialed: true
+            isDialed: true,
+            pushable: sendToPrism,
           };
           pull(
             sendToPrism,
@@ -108,9 +109,6 @@ class Viewer {
                         pc: new RTCPeerConnection(this.config.peerConnection)
                       }
                     }
-                  });
-                  Object.assign(this.prisms[peerId], {
-                    pushable: sendToPrism,
                   });
                   this.pc = this.prisms[prismPeerId].channels[peerId].pc;
                   bindPeerConnectionEvents.call(this, sendToPrism);
@@ -137,6 +135,11 @@ class Viewer {
                   this.event.emit("onWavesUpdated", waves);
                 },
                 "sendChannelsList": ({channels})=> {
+                  for (const channel in channels) {
+                    this.prisms[channel] = {
+                      prismPeerId
+                    }
+                  }
                   this.prisms[prismPeerId] = Object.assign(this.prisms[prismPeerId], channels);
                   this.event.emit("onSendChannelsList", {channels, prismPeerId});
                 }
@@ -175,8 +178,9 @@ class Viewer {
     })
   }
   async getChannel(peerId) {
-    const sendToPrism = this.prisms[peerId].pushable;
-    console.log("get channel from", peerId);
+    const prismPeerId = this.prisms[peerId].prismPeerId;
+    const sendToPrism = this.prisms[prismPeerId].pushable;
+    console.log("get channel from", peerId, prismPeerId);
     this.mediaStream.getTracks().forEach(o=>this.mediaStream.removeTrack(o));
     sendToPrism.push({
       topic: "requestCreateOffer",
