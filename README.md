@@ -18,12 +18,12 @@ streamer = new Casto({type: "sender"})
 ```javascript
 const Casto = require('@casto/sdk')
 viewer = new Casto({type: "viewer"})
-viewer.onSendChannelsList = ({channels, prismPeerId}) => {
+viewer.onSendChannelsList = ({channels}) => {
   for (const channel in channels) {
     /* Do some stuff for channel list */
     button.addEventListener('click', ()=> {
       /* media should be a mediaElement for streaming */
-      media.srcObject = await casto.getChannel(channel.peerId, channel.prismPeerId})
+      media.srcObject = await casto.getChannel(channel.peerId})
     })
   }
 }
