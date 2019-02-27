@@ -92,8 +92,7 @@ class Viewer {
           }
           const sendToPrism = Pushable();
           this.prisms[prismPeerId] = {
-            isDialed: true,
-            pushable: sendToPrism,
+            isDialed: true
           };
           pull(
             sendToPrism,
@@ -109,6 +108,9 @@ class Viewer {
                         pc: new RTCPeerConnection(this.config.peerConnection)
                       }
                     }
+                  });
+                  Object.assign(this.prisms[peerId], {
+                    pushable: sendToPrism,
                   });
                   this.pc = this.prisms[prismPeerId].channels[peerId].pc;
                   bindPeerConnectionEvents.call(this, sendToPrism);
@@ -172,9 +174,9 @@ class Viewer {
       }
     })
   }
-  async getChannel(peerId, prismPeerId) {
-    const sendToPrism = this.prisms[prismPeerId].pushable;
-    console.log("get channel from", peerId, prismPeerId);
+  async getChannel(peerId) {
+    const sendToPrism = this.prisms[peerId].pushable;
+    console.log("get channel from", peerId);
     this.mediaStream.getTracks().forEach(o=>this.mediaStream.removeTrack(o));
     sendToPrism.push({
       topic: "requestCreateOffer",
