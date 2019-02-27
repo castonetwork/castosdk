@@ -189,7 +189,7 @@ class Streamer {
   }
   async start() {
     console.log("wait ready");
-    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const mediaStream = await navigator.mediaDevices.getUserMedia(this.config.constraint || { video: true, audio: true });
     pull(
       this.handshakePushable,
       pull.take(1),
