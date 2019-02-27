@@ -40,8 +40,8 @@ Require keys in the `options` object:
 > start a broadcast by the Casto.
 Should return a `MediaStream`, which is an object for transfer to the remote.
 
-### casto.getChannel(peerId, prismPeerId): <Promise>
-> ...
+### casto.getChannel(peerId): MediaStream<Promise>
+> Should return a `MediaStream`, which is an object that received broadcasting from `peerId`
 
 ## Events
 ### Sender
