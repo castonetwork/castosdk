@@ -28,6 +28,7 @@ class Streamer {
         iceServers: [{urls: "stun:stun.l.google.com:19302"}]
       },
       websocketStars: [multiaddr("/dns4/wsstar.casto.network/tcp/443/wss/p2p-websocket-star/")],
+      mediaStream: undefined,
       constraint: {
         video: true,
         audio: true
@@ -189,7 +190,7 @@ class Streamer {
   }
   async start() {
     console.log("wait ready");
-    const mediaStream = await navigator.mediaDevices.getUserMedia(this.config.constraint || { video: true, audio: true });
+    const mediaStream = this.config.mediaStream || await navigator.mediaDevices.getUserMedia(this.config.constraint || { video: true, audio: true });
     pull(
       this.handshakePushable,
       pull.take(1),
