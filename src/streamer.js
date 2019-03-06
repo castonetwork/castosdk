@@ -172,7 +172,6 @@ class Streamer {
     })
   }
   async startBroadCast(mediaStream) {
-    console.log(mediaStream);
     mediaStream.getTracks().forEach(track =>
       this.pc.addTransceiver(track.kind).sender.replaceTrack(track)
     );
