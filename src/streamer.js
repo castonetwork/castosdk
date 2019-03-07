@@ -38,6 +38,7 @@ class Streamer {
     this.handshakePushable = Pushable();
     this.onHandle = this.onHandle.bind(this);
     this.startBroadCast = this.startBroadCast.bind(this);
+    this.sdpPreprocess = this.replaceCodec.bind(this);
     /* events */
     this.onNodeInitiated = undefined;
     this.onReadyToCast = undefined;
@@ -171,13 +172,16 @@ class Streamer {
       }
     })
   }
+  replaceCodec(sdp) {
+    return codecToFirst(sdp, 'h264');
+  }
   async startBroadCast(mediaStream) {
     mediaStream.getTracks().forEach(track =>
       this.pc.addTransceiver(track.kind).sender.replaceTrack(track)
     );
     try {
       let offer = await this.pc.createOffer();
-      offer.sdp = codecToFirst(offer.sdp, 'h264');
+      offer.sdp = this.sdpPreprocess(offer.sdp);
       await this.pc.setLocalDescription(offer);
       this.sendStream.push({
         topic: "sendCreatedOffer",
