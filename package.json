@@ -1,6 +1,6 @@
 {
   "name": "@casto/sdk",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "web SDK for CASTO",
   "main": "src/index.js",
   "files": [
