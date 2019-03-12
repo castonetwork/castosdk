@@ -144,7 +144,6 @@ class Streamer {
             this.sendStream.end();
           },
           'readyToCast': () => {
-            this.handledPeerId = this.connectedPrismPeerId;
             this.event.emit("onReadyToCast", this.connectedPrismPeerId);
             this.handshakePushable.push(true);
             console.log("this.connectedPrismPeerId : ", this.connectedPrismPeerId);
