@@ -64,9 +64,7 @@ class Streamer {
     ]) {
       this.event.addListener(event, e => this[event] && this[event](e));
     }
-    if (!config.peerId) {
-      this._node = await createNode(config.websocketStars);
-    }
+    this._node = await createNode(config.websocketStars, config && config.peerId);
     this.event.emit("onNodeInitiated");
     return Promise.resolve();
   }
@@ -144,7 +142,6 @@ class Streamer {
             this.sendStream.end();
           },
           'readyToCast': () => {
-            this.handledPeerId = this.connectedPrismPeerId;
             this.event.emit("onReadyToCast", this.connectedPrismPeerId);
             this.handshakePushable.push(true);
             console.log("this.connectedPrismPeerId : ", this.connectedPrismPeerId);
