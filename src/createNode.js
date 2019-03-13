@@ -19,13 +19,21 @@ class Node extends libp2p {
   }
 }
 
-const createNode = async websocketStars => new Promise((resolve, reject) => {
-  PeerInfo.create((err, peerInfo) => {
-    if (err) reject(err)
-    websocketStars.forEach(addr => peerInfo.multiaddrs.add(addr))
-    const node = new Node({ peerInfo })
-    resolve(node)
+const createPeerInfo = ()=> new Promise((resolve,reject)=>
+  PeerInfo.create((err, result) => {
+    if (err) reject(err);
+    resolve(result);
   })
-})
+);
+const createNode = async (websocketStars, peerId) => new Promise((resolve, reject) => {
+  try {
+    const peerInfo = peerId && new PeerInfo(peerId) || await createPeerInfo();
+  } catch(e) {
+    reject(e);
+  }
+  websocketStars.forEach(addr => peerInfo.multiaddrs.add(addr));
+  const node = new Node({ peerInfo });
+  resolve(node);
+});
 
 module.exports = createNode

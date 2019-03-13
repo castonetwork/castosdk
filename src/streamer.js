@@ -64,9 +64,7 @@ class Streamer {
     ]) {
       this.event.addListener(event, e => this[event] && this[event](e));
     }
-    if (!config.peerId) {
-      this._node = await createNode(config.websocketStars);
-    }
+    this._node = await createNode(config.websocketStars, config && config.peerId);
     this.event.emit("onNodeInitiated");
     return Promise.resolve();
   }
