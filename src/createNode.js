@@ -4,7 +4,7 @@ const libp2p = require('libp2p')
 const PeerInfo = require('peer-info')
 const WSStar = require('libp2p-websocket-star')
 const Mplex = require('libp2p-mplex')
-
+const PeerId = require('peer-id');
 class Node extends libp2p {
   constructor (_options) {
     const wsStar = new WSStar({ id: _options.peerInfo.id })
@@ -19,21 +19,15 @@ class Node extends libp2p {
   }
 }
 
-const createPeerInfo = ()=> new Promise((resolve,reject)=>
-  PeerInfo.create((err, result) => {
+const createNode = (websocketStars, peerId) => new Promise(async (resolve, reject) => {
+  PeerInfo.create.apply(null, (peerId && [await new Promise((resolve, reject)=>
+    PeerId.createFromJSON(peerId, (err, result) => resolve(peerId)))
+  ] || []).concat((err, peerInfo) => {
     if (err) reject(err);
-    resolve(result);
-  })
-);
-const createNode = async (websocketStars, peerId) => new Promise((resolve, reject) => {
-  try {
-    const peerInfo = peerId && new PeerInfo(peerId) || await createPeerInfo();
-  } catch(e) {
-    reject(e);
-  }
-  websocketStars.forEach(addr => peerInfo.multiaddrs.add(addr));
-  const node = new Node({ peerInfo });
-  resolve(node);
+    websocketStars.forEach(addr => peerInfo.multiaddrs.add(addr));
+    console.log("export key", peerInfo.id.toJSON());
+    resolve(new Node({ peerInfo }));
+  }));
 });
 
 module.exports = createNode
