@@ -51,6 +51,8 @@ service that relays copies of the sender's stream to viewers.
 Require keys in the `options` object:
 * `type`: type of casto instance. If you want to do a broadcast, set `sender` or set `viewer` if you want to watch a broadcast.
 * `serviceId`: default is `TESTO`
+* `streamerPeerId`:
+* 
 ### casto.start(): MediaStream<Promise>
 > start a broadcast by the Casto.
 Should return a `MediaStream`, which is an object for transfer to the remote.

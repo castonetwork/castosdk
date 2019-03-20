@@ -2,7 +2,7 @@
 
 const EventEmitter = require("./eventEmitter");
 const createNode = require("./createNode");
-const multiaddr = require("multiaddr");
+const multiAddr = require("multiaddr");
 const pull = require("pull-stream");
 const Pushable = require("pull-pushable");
 const stringify = require("pull-stringify");
@@ -37,14 +37,13 @@ class Viewer {
         sdpSemantics: 'unified-plan',
         iceServers: [{urls: "stun:stun.l.google.com:19302"}]
       },
-      websocketStars: [multiaddr("/dns4/wsstar.casto.network/tcp/443/wss/p2p-websocket-star/")],
+      websocketStars: [multiAddr("/dns4/wsstar.casto.network/tcp/443/wss/p2p-websocket-star/")],
       constraint: {
         video: true,
         audio: true
       },
       serviceId: 'TESTO'
     };
-    this.dialToPrism = this.dialToPrism.bind(this);
     this.prisms = {};
     this.mediaStream = new MediaStream();
     /* events */
@@ -54,7 +53,10 @@ class Viewer {
     this.onSendChannelsList = undefined;
     this.onWavesUpdated = undefined;
 
-    this.init(Object.assign(defaults, options));
+    this.dialToPrism = this.dialToPrism.bind(this);
+    this.getPrismIdFromStreamerPeerInfo = this.getPrismIdFromStreamerPeerInfo.bind(this);
+
+    this.init(Object.assign(defaults, options)).then(()=>console.log("initiated"));
   }
   async init(options) {
     await this.setup(options);
@@ -64,7 +66,6 @@ class Viewer {
   async setup(config) {
     this.config = config;
     this.event = new EventEmitter();
-    this.sendStream = Pushable()
     for (const event of [
       "onNodeInitiated",
       "onReadyToCast",
@@ -76,9 +77,36 @@ class Viewer {
     ]) {
       this.event.addListener(event, e => this[event] && this[event](e));
     }
-    this._node = await createNode(config.websocketStars, config && config.peerId);
+    // createNode(config.websocketStars, config && config.peerId).then(o=>this._node=o);
+    this._node = await createNode(config.websocketStars, config && config.peerId &&
+      await new Promise((resolve, reject)=>
+        PeerId.createFromJSON(config.peerId, (err, result) => resolve(result))
+      )
+    );
     this.event.emit("onNodeInitiated");
     return Promise.resolve();
+  }
+  async getPrismIdFromStreamerPeerInfo(peerInfo) {
+    return new Promise((reject, resolve) => {
+      this._node.dialProtocol(peerInfo, `/streamer/${this.config.serviceId}/info`, (err, conn)=> {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        pull(
+          conn,
+          pull.drain(event => {
+            const events = {
+              "connectedPrismPeerId": ({prismPeerId})=> {
+                console.log("connectedPrismPeerId", prismPeerId);
+                resolve(prismPeerId)
+              }
+            };
+            events[events.topic] && events[events.topic](events);
+          })
+        );
+      });
+    });
   }
   async dialToPrism({peerInfo, prismPeerId}) {
     this._node.dialProtocol(peerInfo, `/controller/${this.config.serviceId}`, (err,conn)=> {
@@ -149,11 +177,13 @@ class Viewer {
       })
     })
   }
-  async nodeSetup() {
+  nodeSetup() {
     console.log(`start: ${this.config.serviceId}`, this._node);
-    this._node.on('peer:discovery', peerInfo => {
-      const prismPeerId = peerInfo.id.toB58String();
-      !this.prisms[prismPeerId] && this.dialToPrism({peerInfo, prismPeerId})
+    this._node.on('peer:discovery', async peerInfo => {
+      let prismPeerId = peerInfo.id.toB58String();
+      if (!this.prisms[prismPeerId]) {
+        await this.dialToPrism({peerInfo, prismPeerId});
+      }
     });
     this._node.on('peer:connect', peerInfo => {
       // console.log('peer connected:', peerInfo.id.toB58String())
@@ -168,6 +198,13 @@ class Viewer {
           }
         }
         delete this.prisms[peerId];
+      }
+    });
+    this._node.on('start', async ()=> {
+      if (this.config.streamerPeerId) {
+        const directNode = await createNode(this.config.websocketStars, this.config && this.config.streamerPeerId);
+        const prismPeerId = await this.getPrismIdFromStreamerPeerInfo(directNode._node.peerInfo);
+        console.log(prismPeerId);
       }
     });
     this._node.start(err => {

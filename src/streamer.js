@@ -37,6 +37,7 @@ class Streamer {
     };
     this.handshakePushable = Pushable();
     this.onHandle = this.onHandle.bind(this);
+    this.onDirectHandle = this.onDirectHandle.bind(this);
     this.startBroadCast = this.startBroadCast.bind(this);
     this.sdpPreprocess = this.replaceCodec.bind(this);
     /* events */
@@ -151,13 +152,27 @@ class Streamer {
       })
     );
   }
+  async onDirectHandle(protocol, conn) {
+    const directStream = Pushable();
+    pull(
+      pull.values({
+        topic: "connectedPrismPeerId",
+        prismPeerId: this.connectedPrismPeerId
+      }),
+      pull.map(o => JSON.stringify(o)),
+      conn
+    );
+    directStream.push()
+  }
   async nodeSetup() {
     console.log(`start: ${this.config.serviceId}`, this._node);
     this._node.handle(`/streamer/${this.config.serviceId}/unified-plan`, this.onHandle);
+    this._node.handle(`/streamer/${this.config.serviceId}/info`, this.onDirectHandle);
     this._node.on('peer:connect', peerInfo => {
     });
     this._node.on('peer:disconnect', peerInfo => {
       if (peerInfo.id.toB58String() === this.connectedPrismPeerId) {
+        this.connectedPrismPeerId = null;
         console.log('peer disconnected:', peerInfo.id.toB58String());
       }
     });
@@ -170,7 +185,7 @@ class Streamer {
     })
   }
   replaceCodec(sdp) {
-    return codecToFirst(sdp, 'h264');
+    return codecToFirst(sdp, 'H264');
   }
   async startBroadCast(mediaStream) {
     mediaStream.getTracks().forEach(track =>

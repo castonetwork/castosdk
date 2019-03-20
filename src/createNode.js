@@ -20,9 +20,7 @@ class Node extends libp2p {
 }
 
 const createNode = (websocketStars, peerId) => new Promise(async (resolve, reject) => {
-  PeerInfo.create.apply(null, (peerId && [await new Promise((resolve, reject)=>
-    PeerId.createFromJSON(peerId, (err, result) => resolve(peerId)))
-  ] || []).concat((err, peerInfo) => {
+  PeerInfo.create.apply(null, (peerId && [peerId] || []).concat((err, peerInfo) => {
     if (err) reject(err);
     websocketStars.forEach(addr => peerInfo.multiaddrs.add(addr));
     console.log("export key", peerInfo.id.toJSON());
