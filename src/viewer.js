@@ -52,9 +52,10 @@ class Viewer {
     this.onClosed = undefined;
     this.onSendChannelsList = undefined;
     this.onWavesUpdated = undefined;
+    this.onDirectChannelConnected = undefined;
 
     this.dialToPrism = this.dialToPrism.bind(this);
-    this.getPrismIdFromStreamerPeerInfo = this.getPrismIdFromStreamerPeerInfo.bind(this);
+    this.dialToPrismFromStreamerPeerId = this.dialToPrismFromStreamerPeerId.bind(this);
 
     this.init(Object.assign(defaults, options)).then(()=>console.log("initiated"));
   }
@@ -73,7 +74,8 @@ class Viewer {
       "onSendChannelsList",
       "onSendChannelRemoved",
       "onSendChannelAdded",
-      "onWavesUpdated"
+      "onWavesUpdated",
+      "onDirectChannelConnected"
     ]) {
       this.event.addListener(event, e => this[event] && this[event](e));
     }
@@ -86,23 +88,29 @@ class Viewer {
     this.event.emit("onNodeInitiated");
     return Promise.resolve();
   }
-  async getPrismIdFromStreamerPeerInfo(peerInfo) {
-    return new Promise((reject, resolve) => {
+  async dialToPrismFromStreamerPeerId(peerId) {
+    const peerInfo = await new Promise((resolve, reject)=>
+      PeerInfo.create(PeerId.createFromB58String(peerId), (err, peerInfo)=>
+        err && reject(err) || resolve(peerInfo)
+      )
+    );
+    peerInfo.multiaddrs.add(multiAddr(`/dns4/wsstar.casto.network/tcp/443/wss/p2p-websocket-star/ipfs/${peerId}`));
+    return new Promise((resolve, reject) => {
       this._node.dialProtocol(peerInfo, `/streamer/${this.config.serviceId}/info`, (err, conn)=> {
         if (err) {
-          console.error(err);
-          return;
+          reject(err);
         }
         pull(
           conn,
+          pull.map(o=>JSON.parse(o.toString())),
           pull.drain(event => {
             const events = {
               "connectedPrismPeerId": ({prismPeerId})=> {
                 console.log("connectedPrismPeerId", prismPeerId);
-                resolve(prismPeerId)
+                resolve(this.dialToPrism({peerInfo, prismPeerId}));
               }
             };
-            events[events.topic] && events[events.topic](events);
+            events[event.topic] && events[event.topic](event);
           })
         );
       });
@@ -202,9 +210,9 @@ class Viewer {
     });
     this._node.on('start', async ()=> {
       if (this.config.streamerPeerId) {
-        const directNode = await createNode(this.config.websocketStars, this.config && this.config.streamerPeerId);
-        const prismPeerId = await this.getPrismIdFromStreamerPeerInfo(directNode._node.peerInfo);
-        console.log(prismPeerId);
+        await this.dialToPrismFromStreamerPeerId(this.config.streamerPeerId);
+        console.log("dialToPrismFromStreamerPeerId", this.config.streamerPeerId);
+        this.event.emit("onDirectChannelConnected");
       }
     });
     this._node.start(err => {
