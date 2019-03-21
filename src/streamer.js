@@ -27,6 +27,7 @@ class Streamer {
         sdpSemantics: 'unified-plan',
         iceServers: [{urls: "stun:stun.l.google.com:19302"}]
       },
+      peerOption: {},
       websocketStars: [multiaddr("/dns4/wsstar.casto.network/tcp/443/wss/p2p-websocket-star/")],
       mediaStream: undefined,
       constraint: {
@@ -71,7 +72,7 @@ class Streamer {
   }
 
   async onHandle(protocol, conn) {
-    this.pc = new RTCPeerConnection(this.config.peerConnection);
+    this.pc = new RTCPeerConnection(this.config.peerConnection, this.config.peerOption);
     Object.assign(this.pc, {
       "onicecandidate": event => {
         if (event.candidate) {
@@ -155,10 +156,10 @@ class Streamer {
   async onDirectHandle(protocol, conn) {
     const directStream = Pushable();
     pull(
-      pull.values({
+      pull.values([{
         topic: "connectedPrismPeerId",
         prismPeerId: this.connectedPrismPeerId
-      }),
+      }]),
       pull.map(o => JSON.stringify(o)),
       conn
     );
@@ -185,7 +186,12 @@ class Streamer {
     })
   }
   replaceCodec(sdp) {
-    return codecToFirst(sdp, 'H264');
+    return codecToFirst(sdp, 'H264')
+      /* fix audio bitrate */
+      .replace(
+        "a=fmtp:111 minptime=10;useinbandfec=1",
+        "a=fmtp:111 useinbandfec=1;minptime=10;stereo=1;cbr=1;maxaveragebitrate=400000"
+      );
   }
   async startBroadCast(mediaStream) {
     mediaStream.getTracks().forEach(track =>
