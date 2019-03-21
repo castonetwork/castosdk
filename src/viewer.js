@@ -6,6 +6,8 @@ const multiAddr = require("multiaddr");
 const pull = require("pull-stream");
 const Pushable = require("pull-pushable");
 const stringify = require("pull-stringify");
+const PeerInfo = require("peer-info");
+const PeerId = require("peer-id");
 
 function bindPeerConnectionEvents(sendToPrism) {
   Object.assign(this.pc, {
@@ -52,7 +54,6 @@ class Viewer {
     this.onClosed = undefined;
     this.onSendChannelsList = undefined;
     this.onWavesUpdated = undefined;
-    this.onDirectChannelConnected = undefined;
 
     this.dialToPrism = this.dialToPrism.bind(this);
     this.dialToPrismFromStreamerPeerId = this.dialToPrismFromStreamerPeerId.bind(this);
@@ -74,8 +75,7 @@ class Viewer {
       "onSendChannelsList",
       "onSendChannelRemoved",
       "onSendChannelAdded",
-      "onWavesUpdated",
-      "onDirectChannelConnected"
+      "onWavesUpdated"
     ]) {
       this.event.addListener(event, e => this[event] && this[event](e));
     }
@@ -105,9 +105,9 @@ class Viewer {
           pull.map(o=>JSON.parse(o.toString())),
           pull.drain(event => {
             const events = {
-              "connectedPrismPeerId": ({prismPeerId})=> {
+              "connectedPrismPeerId": async ({prismPeerId})=> {
                 console.log("connectedPrismPeerId", prismPeerId);
-                resolve(this.dialToPrism({peerInfo, prismPeerId}));
+                resolve(await this.dialToPrism({peerInfo, prismPeerId}));
               }
             };
             events[event.topic] && events[event.topic](event);
@@ -117,73 +117,76 @@ class Viewer {
     });
   }
   async dialToPrism({peerInfo, prismPeerId}) {
-    this._node.dialProtocol(peerInfo, `/controller/${this.config.serviceId}`, (err,conn)=> {
-      if (err) {
-        return;
-      }
-      const sendToPrism = Pushable();
-      this.prisms[prismPeerId] = {
-        isDialed: true,
-        pushable: sendToPrism,
-      };
-      pull(
-        sendToPrism,
-        stringify(),
-        conn,
-        pull.map(o => window.JSON.parse(o.toString())),
-        pull.drain(event => {
-          const events = {
-            "sendCreatedOffer": async ({sdp, peerId})=> {
-              Object.assign(this.prisms[prismPeerId], {
-                channels: {
-                  [peerId]: {
-                    pc: new RTCPeerConnection(this.config.peerConnection)
+    return new Promise((resolve, reject)=> {
+      this._node.dialProtocol(peerInfo, `/controller/${this.config.serviceId}`, (err, conn) => {
+        if (err) {
+          return;
+        }
+        const sendToPrism = Pushable();
+        this.prisms[prismPeerId] = {
+          isDialed: true,
+          pushable: sendToPrism,
+        };
+        pull(
+          sendToPrism,
+          stringify(),
+          conn,
+          pull.map(o => window.JSON.parse(o.toString())),
+          pull.drain(event => {
+            const events = {
+              "sendCreatedOffer": async ({sdp, peerId}) => {
+                Object.assign(this.prisms[prismPeerId], {
+                  channels: {
+                    [peerId]: {
+                      pc: new RTCPeerConnection(this.config.peerConnection)
+                    }
+                  }
+                });
+                this.pc = this.prisms[prismPeerId].channels[peerId].pc;
+                bindPeerConnectionEvents.call(this, sendToPrism);
+                await this.pc.setRemoteDescription(sdp);
+                let answer = await this.pc.createAnswer({
+                  offerToReceiveAudio: true,
+                  offerToReceiveVideo: true,
+                });
+                await this.pc.setLocalDescription(answer);
+                sendToPrism.push({
+                  topic: "sendCreatedAnswer",
+                  sdp: this.pc.localDescription,
+                  peerId
+                });
+                /* emit event  */
+              },
+              "updateChannelInfo": ({type, peerId, info}) => {
+                this.event.emit(type === "added" && "onSendChannelAdded", {peerId, prismPeerId, info});
+              },
+              "sendTrickleCandidate": ({ice}) => {
+                this.pc.addIceCandidate(ice);
+              },
+              "updateWaves": ({waves}) => {
+                this.event.emit("onWavesUpdated", waves);
+              },
+              "sendChannelsList": ({channels}) => {
+                for (const channel in channels) {
+                  this.prisms[channel] = {
+                    prismPeerId
                   }
                 }
-              });
-              this.pc = this.prisms[prismPeerId].channels[peerId].pc;
-              bindPeerConnectionEvents.call(this, sendToPrism);
-              await this.pc.setRemoteDescription(sdp);
-              let answer = await this.pc.createAnswer({
-                offerToReceiveAudio:true,
-                offerToReceiveVideo:true,
-              });
-              await this.pc.setLocalDescription(answer);
-              sendToPrism.push({
-                topic: "sendCreatedAnswer",
-                sdp: this.pc.localDescription,
-                peerId
-              });
-              /* emit event  */
-            },
-            "updateChannelInfo": ({type, peerId, info}) => {
-              this.event.emit(type === "added" && "onSendChannelAdded", {peerId, prismPeerId, info});
-            },
-            "sendTrickleCandidate": ({ice})=> {
-              this.pc.addIceCandidate(ice);
-            },
-            "updateWaves": ({waves})=> {
-              this.event.emit("onWavesUpdated", waves);
-            },
-            "sendChannelsList": ({channels})=> {
-              for (const channel in channels) {
-                this.prisms[channel] = {
-                  prismPeerId
-                }
+                this.prisms[prismPeerId] = Object.assign(this.prisms[prismPeerId], channels);
+                this.event.emit("onSendChannelsList", {channels, prismPeerId});
               }
-              this.prisms[prismPeerId] = Object.assign(this.prisms[prismPeerId], channels);
-              this.event.emit("onSendChannelsList", {channels, prismPeerId});
-            }
-          };
-          console.log("[event]", event );
-          events[event.topic] && events[event.topic](event);
-        })
-      );
-      sendToPrism.push({
-        topic: "registerWaveInfo",
-        peerId: prismPeerId
+            };
+            console.log("[event]", event);
+            events[event.topic] && events[event.topic](event);
+          })
+        );
+        sendToPrism.push({
+          topic: "registerWaveInfo",
+          peerId: prismPeerId
+        });
+        resolve(peerInfo);
       })
-    })
+    });
   }
   nodeSetup() {
     console.log(`start: ${this.config.serviceId}`, this._node);
@@ -212,7 +215,6 @@ class Viewer {
       if (this.config.streamerPeerId) {
         await this.dialToPrismFromStreamerPeerId(this.config.streamerPeerId);
         console.log("dialToPrismFromStreamerPeerId", this.config.streamerPeerId);
-        this.event.emit("onDirectChannelConnected");
       }
     });
     this._node.start(err => {
