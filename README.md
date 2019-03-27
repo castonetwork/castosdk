@@ -28,11 +28,12 @@ viewer.onSendChannelsList = ({channels}) => {
 }
 ```
 
-## For other web frameworks (TBD)
+## For other web frameworks
 * react tutorial
 * vue tutorial
 * vanilla javascript tutorial
-
+  * streamer: https://codepen.io/acidsound-the-bashful/pen/xBQBjR
+  * viewer : https://codepen.io/acidsound-the-bashful/pen/aMQMxJ
 # Modules
 ![casto diagram](./assets/casto_diagram.png)
 ## sender ( `{type: "sender"}` )
@@ -43,6 +44,7 @@ module that receive channel list of `serviceId` and choose stream from the list 
 service that relays copies of the sender's stream to viewers.
 * https://prisms.casto.tv/serviceId=<SERVICE_ID>
 * default: https://prisms.casto.tv/serviceId=TESTO
+* or run your own relay - https://github.com/castonetwork/prismbuild
 
 # API
 ## Methods
